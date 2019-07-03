@@ -1,0 +1,118 @@
+usedcarprices = read.csv(file.choose()) # Import data 
+head(usedcarprices) # First 6 obs of Data
+tail(usedcarprices) # Last 6 obs of Data
+str(usedcarprices) # Data Structure & Data Type of Each Variable
+nrow(usedcarprices) # Num of rows
+ncol(usedcarprices) # Num of columns
+class(usedcarprices) # Data Structure
+summary(usedcarprices) # Descriptive Stats for Numerical
+# Frequency Counts for Categorical or String variables
+summary(usedcarprices$Price) # Summary of one variable
+hist(usedcarprices$Price) # histogram
+boxplot(usedcarprices$Price, horizontal = T) # boxplot
+plot(density(usedcarprices$Price)) # Density Plot
+
+# CREATE THE BOXPLOT, HISTOGRAM, DENSITY PLOT OF AGE & KM 
+
+hist(usedcarprices$Age) # histogram
+boxplot(usedcarprices$Age, horizontal = T) # boxplot
+plot(density(usedcarprices$Age)) # Density Plot
+
+hist(usedcarprices$KM) # histogram
+boxplot(usedcarprices$KM, horizontal = T) # boxplot
+plot(density(usedcarprices$KM)) # Density Plot
+
+table(usedcarprices$FuelType) # Frequency Counts
+table(usedcarprices$FuelType, usedcarprices$AutoType) # Cross Tabuation
+
+aggregate(usedcarprices$Price~usedcarprices$FuelType, FUN = mean)
+# Equivalent to Groupby funtion in python, left side is numerical??
+
+# Is the Average price of Automatic & Manual Cars same?
+aggregate(usedcarprices$Price~usedcarprices$AutoType, FUN = mean)
+
+# Is the Average age of Automatic & Manual Cars same?
+aggregate(usedcarprices$Age~usedcarprices$FuelType, FUN = mean)
+
+# Is the Average KM of Automatic & Manual Cars same?
+aggregate(usedcarprices$KM~usedcarprices$AutoType, FUN = mean)
+
+# Is the Average price of MetColor & NonMetcolor Cars same?
+aggregate(usedcarprices$Price~usedcarprices$MetColorType, FUN = mean)
+
+summary(usedcarprices$Price)
+#PriceType
+usedcarprices$PriceType = ifelse(usedcarprices$Price >= 12000, "VeryHigh", 
+                                 ifelse(usedcarprices$Price >= 10000, "HighPrice",
+                                        ifelse(usedcarprices$Price >= 8500, "MediumPrice", "LowPrice")))
+table(usedcarprices$PriceType)
+
+#UsageType
+usedcarprices$UsageType = ifelse(usedcarprices$KM >= 90000, "Very High Use",
+                                 ifelse(usedcarprices$KM >= 70000, "Heavy Use", 
+                                        ifelse(usedcarprices$KM >= 50000, "Medium Use", "Low Use")))
+table(usedcarprices$UsageType)
+
+
+#SpeedType
+usedcarprices$SpeedType = ifelse(usedcarprices$HP >= 110, "Fast",
+                                 ifelse(usedcarprices$HP >= 90, "Medium", "Slow"))
+table(usedcarprices$SpeedType)
+
+# NULL - There is no significant difference Average in Prices
+ # of Automatic & Manual Cars -  Both Means are Equal
+# ALTERNATE - There is significant difference Average in Prices
+ # of Automatic & Manual Cars -  Both Means are  NOT Equal
+
+t.test(usedcarprices$Price~usedcarprices$AutoType)
+# Since p-value greater than 0.05, ACCEPT THE NULL OR FAIL TO REJECT NULL
+
+# NULL - There is no significant difference Average in Prices
+ # of Metcolor & nonMetcolor Cars -  Both Means are Equal
+# ALTERNATE - There is significant difference Average in Prices
+ # of Metcolor & nonMetcolor Cars -  Both Means are  NOT Equal
+
+t.test(usedcarprices$Price~usedcarprices$MetColorType)
+# Since p-value greater than 0.05, REJECT THE NULL 
+
+# NULL - There is no significant difference Average in Prices
+ # of Petrol, Diesel, CNG Cars -  Both Means are Equal
+# ALTERNATE - There is significant difference Average in Prices
+ # of Petrol, Diesel, CNG Cars Cars -  Both Means are  NOT Equal
+
+summary(aov(usedcarprices$Price~usedcarprices$FuelType))
+# ANOVA SINGLE FACTOR
+
+# NULL - There is no significant difference Average in Age
+# of Petrol, Diesel, CNG Cars -  Both Means are Equal
+# ALTERNATE - There is significant difference Average in Age
+# of Petrol, Diesel, CNG Cars Cars -  Both Means are  NOT Equal
+
+summary(aov(usedcarprices$Age~usedcarprices$FuelType))
+# ANOVA SINGLE FACTOR
+
+# NULL - There is no relationship between FuelType & UsageType
+# ALTERNATE - There is no relationship between FuelType & UsageType
+chisq.test(table(usedcarprices$FuelType, usedcarprices$UsageType))
+
+# NULL - There is no relationship between AutoType & UsageType
+# ALTERNATE - There is no relationship between AutoType & UsageType
+chisq.test(table(usedcarprices$AutoType, usedcarprices$UsageType))
+
+# Linear Regression Model
+usedcarreg = lm(Price~.,data = usedcarprices) #Building the Model
+summary(usedcarreg)
+#Independent Variable p-value
+
+plot(usedcarreg) # 4 residual plots
+sqrt(mean(usedcarreg$residual^2)) #RMSE
+
+# DECISION TREE MODEL # package required "rpart"
+usedcarrpart = rpart(Price~.,data = usedcarprices[-1])
+summary(usedcarrpart)
+rpart.plot(usedcarrpart) # package required "rpart.plot"
+usedcarrpart$variable.importance
+
+# RANDOM FOREST # package required "randomForest"
+usedcarrandforest = randomForest(Price~., data = usedcarprices[-1], ntree = 3000, do.trace = 100)
+print(usedcarrandforest)
